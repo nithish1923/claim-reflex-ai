@@ -4,30 +4,52 @@
 
 <h2>Login</h2>
 
-<input id="email" placeholder="email"><br><br>
-<input id="password" type="password"><br><br>
+<input type="email" id="email" placeholder="Email"><br><br>
+<input type="password" id="password" placeholder="Password"><br><br>
 
 <button onclick="login()">Login</button>
+<button onclick="signup()">Signup</button>
+
+<p id="msg"></p>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
 
 <script>
-const supabaseClient = supabase.createClient(
-  "YOUR_SUPABASE_URL",
-  "YOUR_SUPABASE_KEY"
-)
+const SUPABASE_URL = "https://ubdiwfsfjaaxnvygdclx.supabase.co"
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY)
 
 async function login() {
   const email = document.getElementById("email").value
   const password = document.getElementById("password").value
 
   const { data, error } = await supabaseClient.auth.signInWithPassword({
-    email, password
+    email,
+    password
   })
 
-  if (!error) {
+  if (error) {
+    document.getElementById("msg").innerText = error.message
+  } else {
     localStorage.setItem("user", JSON.stringify(data.user))
     window.location.href = "app.html"
+  }
+}
+
+async function signup() {
+  const email = document.getElementById("email").value
+  const password = document.getElementById("password").value
+
+  const { error } = await supabaseClient.auth.signUp({
+    email,
+    password
+  })
+
+  if (error) {
+    document.getElementById("msg").innerText = error.message
+  } else {
+    document.getElementById("msg").innerText = "Signup successful. Now login."
   }
 }
 </script>
