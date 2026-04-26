@@ -23,7 +23,9 @@ from datetime import datetime
 # ----------------------------------------------------------
 # HELPERS
 # ----------------------------------------------------------
-
+def validate(policy_text, claim_text):
+    print("VALIDATOR VERSION 7 LOADED")
+    
 def clean_text(text):
     if not text:
         return ""
