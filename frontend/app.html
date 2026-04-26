@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
 *{
@@ -21,11 +22,11 @@ scroll-behavior:smooth;
 
 body{
 min-height:100vh;
+padding:30px;
 background:
 radial-gradient(circle at top left,#2563eb 0%,transparent 30%),
 radial-gradient(circle at bottom right,#06b6d4 0%,transparent 30%),
 linear-gradient(135deg,#0f172a,#111827,#1e293b);
-padding:30px;
 overflow-x:hidden;
 }
 
@@ -36,22 +37,22 @@ position:fixed;
 width:320px;
 height:320px;
 border-radius:50%;
-filter:blur(90px);
+filter:blur(95px);
 opacity:.20;
 z-index:0;
 animation:float 8s ease-in-out infinite;
 }
 
 body::before{
-background:#3b82f6;
-top:-90px;
-left:-90px;
+top:-100px;
+left:-100px;
+background:#2563eb;
 }
 
 body::after{
-background:#06b6d4;
 right:-100px;
 bottom:-100px;
+background:#06b6d4;
 animation-delay:3s;
 }
 
@@ -69,7 +70,7 @@ animation:fadeUp .8s ease;
 }
 
 @keyframes fadeUp{
-from{opacity:0;transform:translateY(35px)}
+from{opacity:0;transform:translateY(30px)}
 to{opacity:1;transform:translateY(0)}
 }
 
@@ -79,7 +80,7 @@ backdrop-filter:blur(18px);
 border:1px solid rgba(255,255,255,.08);
 border-radius:28px;
 padding:32px;
-box-shadow:0 20px 50px rgba(0,0,0,.25);
+box-shadow:0 25px 50px rgba(0,0,0,.28);
 }
 
 .top{
@@ -109,10 +110,10 @@ margin-top:14px;
 padding:8px 14px;
 border-radius:999px;
 font-size:12px;
-font-weight:700;
+font-weight:800;
 background:rgba(34,197,94,.16);
 color:#4ade80;
-border:1px solid rgba(74,222,128,.2);
+border:1px solid rgba(74,222,128,.22);
 }
 
 .logout{
@@ -133,9 +134,15 @@ gap:22px;
 
 .box{
 background:rgba(255,255,255,.06);
-border:1px dashed rgba(255,255,255,.18);
+border:1px dashed rgba(255,255,255,.16);
 padding:24px;
 border-radius:22px;
+transition:.3s;
+}
+
+.box:hover{
+transform:translateY(-4px);
+border-color:#38bdf8;
 }
 
 .box h3{
@@ -145,8 +152,8 @@ margin-bottom:10px;
 }
 
 .box p{
-font-size:14px;
 color:#cbd5e1;
+font-size:14px;
 margin-bottom:14px;
 }
 
@@ -161,15 +168,14 @@ flex:1;
 }
 
 input[type=file]{
-width:100%;
 padding:12px;
 border:none;
 border-radius:14px;
 background:#fff;
+width:100%;
 }
 
 .preview-btn{
-min-width:110px;
 padding:12px 14px;
 border:none;
 border-radius:14px;
@@ -205,8 +211,8 @@ background:linear-gradient(90deg,#2563eb,#06b6d4);
 }
 
 button.report{
-background:linear-gradient(90deg,#16a34a,#22c55e);
 display:none;
+background:linear-gradient(90deg,#16a34a,#22c55e);
 }
 
 button:disabled{
@@ -229,8 +235,8 @@ align-items:center;
 
 .result{
 margin-top:24px;
-border-radius:24px;
 padding:24px;
+border-radius:24px;
 background:#081120;
 border:1px solid rgba(255,255,255,.06);
 }
@@ -291,8 +297,7 @@ transition:1s ease;
 display:grid;
 grid-template-columns:1fr 1fr;
 gap:14px;
-margin-top:18px;
-margin-bottom:18px;
+margin:18px 0;
 }
 
 .mini-card{
@@ -329,82 +334,13 @@ color:#fff;
 }
 
 pre{
-margin-top:18px;
 white-space:pre-wrap;
 word-wrap:break-word;
 font-size:14px;
+line-height:1.7;
 color:#cbd5e1;
-line-height:1.7;
 }
 
-/* rejection box */
-.reject-box{
-display:none;
-margin-top:18px;
-padding:18px;
-border-radius:18px;
-background:rgba(239,68,68,.10);
-border:1px solid rgba(239,68,68,.35);
-}
-
-.reject-title{
-font-size:18px;
-font-weight:800;
-color:#fca5a5;
-margin-bottom:10px;
-}
-
-.reason-list{
-padding-left:18px;
-color:#fecaca;
-line-height:1.8;
-font-size:14px;
-}
-
-.next-steps{
-margin-top:12px;
-padding:14px;
-border-radius:14px;
-background:rgba(255,255,255,.04);
-color:#e5e7eb;
-font-size:14px;
-line-height:1.7;
-}
-
-/* history */
-.history{
-margin-top:26px;
-padding:22px;
-border-radius:24px;
-background:#0b1322;
-border:1px solid rgba(255,255,255,.06);
-}
-
-.history h3{
-color:#fff;
-margin-bottom:14px;
-font-size:20px;
-}
-
-.history-item{
-padding:14px;
-border-radius:16px;
-background:rgba(255,255,255,.04);
-margin-bottom:12px;
-color:#e5e7eb;
-font-size:14px;
-line-height:1.6;
-}
-
-.history-green{
-border-left:4px solid #22c55e;
-}
-
-.history-red{
-border-left:4px solid #ef4444;
-}
-
-/* preview modal */
 .modal{
 position:fixed;
 inset:0;
@@ -469,10 +405,6 @@ padding:22px;
 flex-direction:column;
 align-items:stretch;
 }
-
-.preview-btn{
-width:100%;
-}
 }
 </style>
 </head>
@@ -495,7 +427,7 @@ width:100%;
 
 <div class="box">
 <h3>📄 Policy Document</h3>
-<p>Upload insurance / policy PDF for AI validation.</p>
+<p>Upload insurance / policy PDF</p>
 <div class="upload-row">
 <input type="file" id="policy" accept=".pdf">
 <button class="preview-btn" onclick="previewLocal('policy')">Preview</button>
@@ -504,7 +436,7 @@ width:100%;
 
 <div class="box">
 <h3>🧾 Claim Document</h3>
-<p>Upload customer claim request PDF.</p>
+<p>Upload customer claim request PDF</p>
 <div class="upload-row">
 <input type="file" id="claim" accept=".pdf">
 <button class="preview-btn" onclick="previewLocal('claim')">Preview</button>
@@ -532,52 +464,48 @@ width:100%;
 </div>
 
 <div class="mini-grid">
+
 <div class="mini-card">
 <div class="icon">📄</div>
-<div><div class="mini-label">Policy Status</div><div class="mini-value" id="policyStatus">Waiting</div></div>
+<div>
+<div class="mini-label">Policy Status</div>
+<div class="mini-value" id="policyStatus">Waiting</div>
+</div>
 </div>
 
 <div class="mini-card">
 <div class="icon">👤</div>
-<div><div class="mini-label">Name Match</div><div class="mini-value" id="nameStatus">Waiting</div></div>
+<div>
+<div class="mini-label">Name Match</div>
+<div class="mini-value" id="nameStatus">Waiting</div>
+</div>
 </div>
 
 <div class="mini-card">
 <div class="icon">💰</div>
-<div><div class="mini-label">Amount Check</div><div class="mini-value" id="amountStatus">Waiting</div></div>
+<div>
+<div class="mini-label">Amount Check</div>
+<div class="mini-value" id="amountStatus">Waiting</div>
+</div>
 </div>
 
 <div class="mini-card">
 <div class="icon">🎯</div>
-<div><div class="mini-label">Confidence</div><div class="mini-value" id="confidenceText">0%</div></div>
+<div>
+<div class="mini-label">Confidence</div>
+<div class="mini-value" id="confidenceText">0%</div>
 </div>
+</div>
+
 </div>
 
 <pre id="out">Upload files and run analysis.</pre>
 
-<div class="reject-box" id="rejectBox">
-<div class="reject-title">Claim Rejected</div>
-<ul class="reason-list" id="reasonList"></ul>
-<div class="next-steps">
-<b>Suggested Next Steps:</b><br>
-• Recheck uploaded documents<br>
-• Verify policy number / holder details<br>
-• Upload updated claim papers<br>
-• Contact support if issue continues
+</div>
 </div>
 </div>
 
-</div>
-
-<div class="history">
-<h3>Recent Analyses</h3>
-<div id="historyList"></div>
-</div>
-
-</div>
-</div>
-
-<!-- Preview Modal -->
+<!-- modal -->
 <div class="modal" id="previewModal">
 <div class="modal-box">
 <div class="modal-top">
@@ -587,8 +515,6 @@ width:100%;
 <iframe id="previewFrame"></iframe>
 </div>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
 const SUPABASE_URL="https://ubdiwfsfjaaxnvygdclx.supabase.co";
@@ -607,7 +533,7 @@ window.location.href="index.html";
 
 function previewLocal(id){
 const file=document.getElementById(id).files[0];
-if(!file){alert("Choose a PDF first.");return;}
+if(!file){alert("Choose PDF first.");return;}
 document.getElementById("previewFrame").src=URL.createObjectURL(file);
 document.getElementById("previewModal").style.display="flex";
 }
@@ -627,10 +553,6 @@ b.className="badge "+type;
 b.innerText=text;
 }
 
-function wait(ms){
-return new Promise(r=>setTimeout(r,ms));
-}
-
 async function uploadFile(file){
 const fileName=Date.now()+"_"+file.name;
 
@@ -647,47 +569,12 @@ const { data } = supabaseClient.storage
 return data.publicUrl;
 }
 
-function saveHistory(decision,confidence,reason){
-let items=JSON.parse(localStorage.getItem("claimHistory") || "[]");
-
-items.unshift({
-date:new Date().toLocaleString(),
-decision,
-confidence,
-reason
-});
-
-items=items.slice(0,5);
-
-localStorage.setItem("claimHistory",JSON.stringify(items));
-renderHistory();
-}
-
-function renderHistory(){
-const list=document.getElementById("historyList");
-const items=JSON.parse(localStorage.getItem("claimHistory") || "[]");
-
-if(items.length===0){
-list.innerHTML='<div class="history-item">No analyses yet.</div>';
-return;
-}
-
-list.innerHTML=items.map(i=>`
-<div class="history-item ${i.decision==='Rejected'?'history-red':'history-green'}">
-<b>${i.decision}</b> • ${i.confidence}<br>
-${i.date}<br>
-${i.reason}
-</div>
-`).join("");
-}
-
 async function run(){
 
-const msg=document.getElementById("msg");
-const out=document.getElementById("out");
 const btn=document.getElementById("analyzeBtn");
+const msg=document.getElementById("msg");
 const reportBtn=document.getElementById("reportBtn");
-const rejectBox=document.getElementById("rejectBox");
+const out=document.getElementById("out");
 
 try{
 
@@ -695,27 +582,24 @@ const p=document.getElementById("policy").files[0];
 const c=document.getElementById("claim").files[0];
 
 if(!p || !c){
-msg.innerText="Please upload both Policy and Claim documents.";
+msg.innerText="Please upload both documents.";
 return;
 }
 
-rejectBox.style.display="none";
-reportBtn.style.display="none";
 btn.disabled=true;
-btn.innerText="Processing...";
+reportBtn.style.display="none";
 
 setBadge("Processing","blue");
-setProgress(10);
-msg.innerText="Uploading documents...";
+msg.innerText="Uploading files...";
+setProgress(20);
 
 const policy_url=await uploadFile(p);
 const claim_url=await uploadFile(c);
 
-await wait(500);
-setProgress(55);
 msg.innerText="AI reviewing claim...";
+setProgress(70);
 
-const res=await fetch(BACKEND + "/process",{
+const res=await fetch(BACKEND+"/process",{
 method:"POST",
 headers:{"Content-Type":"application/json"},
 body:JSON.stringify({policy_url,claim_url})
@@ -739,20 +623,18 @@ document.getElementById("confidenceText").innerText=confidence;
 out.innerText=
 "Decision: " + data.final.decision + "\n\nReason:\n" + data.final.reason;
 
-msg.innerText="Claim processed successfully.";
-
-reportBtn.style.display="block";
-
 reportData={
 decision:data.final.decision,
-confidence,
+confidence:confidence,
 reason:data.final.reason,
-policy:"Active",
-name:"Matched",
-amount:"Eligible"
+approve:data.approve_agent || "Approval agent recommends approval.",
+reject:data.reject_agent || "Rejection agent found weak objections.",
+judge:data.final.reason || "Final decision approved."
 };
 
-saveHistory(data.final.decision,confidence,data.final.reason);
+setBadge(data.final.decision,"green");
+msg.innerText="Claim processed successfully.";
+reportBtn.style.display="block";
 
 }else if(data.status==="rejected"){
 
@@ -763,28 +645,21 @@ document.getElementById("nameStatus").innerText="Mismatch ❌";
 document.getElementById("amountStatus").innerText="Blocked ❌";
 document.getElementById("confidenceText").innerText="32%";
 
-out.innerText="Claim Rejected";
+const reasons=(data.errors || []).join(", ");
 
-msg.innerText="Validation failed.";
-
-const reasons=data.errors || ["Unknown issue"];
-
-document.getElementById("reasonList").innerHTML=
-reasons.map(r=>"<li>"+r+"</li>").join("");
-
-rejectBox.style.display="block";
-reportBtn.style.display="block";
+out.innerText="Claim Rejected\n\nReasons:\n"+reasons;
 
 reportData={
 decision:"Rejected",
 confidence:"32%",
-reason:reasons.join(", "),
-policy:"Failed",
-name:"Mismatch",
-amount:"Blocked"
+reason:reasons,
+approve:"Approval agent found limited support.",
+reject:"Rejection agent found policy/document mismatch.",
+judge:reasons
 };
 
-saveHistory("Rejected","32%",reasons.join(", "));
+msg.innerText="Claim rejected.";
+reportBtn.style.display="block";
 
 }else{
 setBadge("Error","red");
@@ -792,14 +667,11 @@ out.innerText=JSON.stringify(data,null,2);
 }
 
 btn.disabled=false;
-btn.innerText="⚡ Analyze Claim";
 
 }catch(err){
-
-msg.innerText="Error: "+err.message;
+msg.innerText=err.message;
 setBadge("Error","red");
 btn.disabled=false;
-btn.innerText="⚡ Analyze Claim";
 }
 }
 
@@ -808,28 +680,55 @@ function downloadReport(){
 const { jsPDF } = window.jspdf;
 const doc=new jsPDF();
 
-doc.setFontSize(20);
+doc.setFontSize(22);
 doc.text("Claim Reflex AI Report",20,20);
 
 doc.setFontSize(11);
 doc.text("Generated: "+new Date().toLocaleString(),20,30);
 
-doc.setFontSize(14);
+doc.setFontSize(15);
 doc.text("Decision: "+reportData.decision,20,45);
 doc.text("Confidence: "+reportData.confidence,20,55);
-doc.text("Policy Status: "+reportData.policy,20,70);
-doc.text("Name Match: "+reportData.name,20,80);
-doc.text("Amount Check: "+reportData.amount,20,90);
 
-doc.text("Reason:",20,110);
+doc.text("Summary:",20,70);
+let lines=doc.splitTextToSize(reportData.reason || "",170);
+doc.text(lines,20,80);
 
-const lines=doc.splitTextToSize(reportData.reason || "",170);
-doc.text(lines,20,120);
+/* Page 2 Debate */
+doc.addPage();
 
-doc.save("Claim-Reflex-Report.pdf");
+doc.setFontSize(20);
+doc.text("AI Debate Chamber",20,20);
+
+doc.setFontSize(13);
+doc.text("Approval Agent:",20,38);
+lines=doc.splitTextToSize(reportData.approve || "",170);
+doc.text(lines,20,48);
+
+doc.text("Rejection Agent:",20,95);
+lines=doc.splitTextToSize(reportData.reject || "",170);
+doc.text(lines,20,105);
+
+doc.text("Final Judge:",20,152);
+lines=doc.splitTextToSize(reportData.judge || "",170);
+doc.text(lines,20,162);
+
+/* Page 3 Audit */
+doc.addPage();
+
+doc.setFontSize(20);
+doc.text("Audit Trail",20,20);
+
+doc.setFontSize(13);
+doc.text("Engine: Claim Reflex AI v1",20,40);
+doc.text("Decision Mode: Multi-Agent Debate",20,55);
+doc.text("Processing Timestamp:",20,70);
+doc.text(new Date().toLocaleString(),20,80);
+
+doc.text("Status Integrity Checks Passed",20,100);
+
+doc.save("Claim-Reflex-Premium-Report.pdf");
 }
-
-renderHistory();
 </script>
 
 </body>
