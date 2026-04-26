@@ -8,7 +8,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-<!-- jsPDF -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
@@ -62,11 +61,11 @@ animation-delay:3s;
 }
 
 .container{
-max-width:1150px;
+max-width:1180px;
 margin:auto;
 position:relative;
 z-index:2;
-animation:fadeUp .9s ease;
+animation:fadeUp .8s ease;
 }
 
 @keyframes fadeUp{
@@ -124,18 +123,12 @@ cursor:pointer;
 font-weight:700;
 color:#fff;
 background:linear-gradient(90deg,#ef4444,#dc2626);
-transition:.3s ease;
-}
-
-.logout:hover{
-transform:translateY(-2px);
 }
 
 .grid{
 display:grid;
 grid-template-columns:1fr 1fr;
 gap:22px;
-margin-top:22px;
 }
 
 .box{
@@ -143,12 +136,6 @@ background:rgba(255,255,255,.06);
 border:1px dashed rgba(255,255,255,.18);
 padding:24px;
 border-radius:22px;
-transition:.35s ease;
-}
-
-.box:hover{
-transform:translateY(-6px);
-border-color:#38bdf8;
 }
 
 .box h3{
@@ -161,10 +148,8 @@ margin-bottom:10px;
 font-size:14px;
 color:#cbd5e1;
 margin-bottom:14px;
-line-height:1.5;
 }
 
-/* upload row */
 .upload-row{
 display:flex;
 gap:10px;
@@ -178,12 +163,11 @@ flex:1;
 input[type=file]{
 width:100%;
 padding:12px;
-border-radius:14px;
 border:none;
+border-radius:14px;
 background:#fff;
 }
 
-/* preview button */
 .preview-btn{
 min-width:110px;
 padding:12px 14px;
@@ -193,14 +177,8 @@ cursor:pointer;
 font-weight:700;
 color:#fff;
 background:linear-gradient(90deg,#7c3aed,#6366f1);
-transition:.3s ease;
 }
 
-.preview-btn:hover{
-transform:translateY(-2px);
-}
-
-/* centered buttons */
 .action-wrap{
 display:flex;
 flex-direction:column;
@@ -211,7 +189,7 @@ margin-top:24px;
 
 button.process,
 button.report{
-width:420px;
+width:430px;
 max-width:100%;
 padding:16px;
 font-size:18px;
@@ -220,7 +198,6 @@ border:none;
 border-radius:18px;
 cursor:pointer;
 color:#fff;
-transition:.35s ease;
 }
 
 button.process{
@@ -232,15 +209,9 @@ background:linear-gradient(90deg,#16a34a,#22c55e);
 display:none;
 }
 
-button.process:hover,
-button.report:hover{
-transform:translateY(-3px);
-}
-
 button:disabled{
 opacity:.65;
 cursor:not-allowed;
-transform:none;
 }
 
 #msg{
@@ -366,21 +337,78 @@ color:#cbd5e1;
 line-height:1.7;
 }
 
-.pulse{
-animation:pulse 1.1s infinite;
+/* rejection box */
+.reject-box{
+display:none;
+margin-top:18px;
+padding:18px;
+border-radius:18px;
+background:rgba(239,68,68,.10);
+border:1px solid rgba(239,68,68,.35);
 }
 
-@keyframes pulse{
-0%{opacity:1}
-50%{opacity:.45}
-100%{opacity:1}
+.reject-title{
+font-size:18px;
+font-weight:800;
+color:#fca5a5;
+margin-bottom:10px;
+}
+
+.reason-list{
+padding-left:18px;
+color:#fecaca;
+line-height:1.8;
+font-size:14px;
+}
+
+.next-steps{
+margin-top:12px;
+padding:14px;
+border-radius:14px;
+background:rgba(255,255,255,.04);
+color:#e5e7eb;
+font-size:14px;
+line-height:1.7;
+}
+
+/* history */
+.history{
+margin-top:26px;
+padding:22px;
+border-radius:24px;
+background:#0b1322;
+border:1px solid rgba(255,255,255,.06);
+}
+
+.history h3{
+color:#fff;
+margin-bottom:14px;
+font-size:20px;
+}
+
+.history-item{
+padding:14px;
+border-radius:16px;
+background:rgba(255,255,255,.04);
+margin-bottom:12px;
+color:#e5e7eb;
+font-size:14px;
+line-height:1.6;
+}
+
+.history-green{
+border-left:4px solid #22c55e;
+}
+
+.history-red{
+border-left:4px solid #ef4444;
 }
 
 /* preview modal */
 .modal{
 position:fixed;
 inset:0;
-background:rgba(0,0,0,.75);
+background:rgba(0,0,0,.78);
 display:none;
 justify-content:center;
 align-items:center;
@@ -416,7 +444,6 @@ padding:8px 14px;
 border-radius:10px;
 color:#fff;
 cursor:pointer;
-font-weight:700;
 }
 
 .modal iframe{
@@ -461,7 +488,6 @@ width:100%;
 <div class="subtitle">AI Claim & Policy Decision Platform</div>
 <div class="tag">LIVE SYSTEM</div>
 </div>
-
 <button class="logout" onclick="logout()">Logout</button>
 </div>
 
@@ -470,7 +496,6 @@ width:100%;
 <div class="box">
 <h3>📄 Policy Document</h3>
 <p>Upload insurance / policy PDF for AI validation.</p>
-
 <div class="upload-row">
 <input type="file" id="policy" accept=".pdf">
 <button class="preview-btn" onclick="previewLocal('policy')">Preview</button>
@@ -480,7 +505,6 @@ width:100%;
 <div class="box">
 <h3>🧾 Claim Document</h3>
 <p>Upload customer claim request PDF.</p>
-
 <div class="upload-row">
 <input type="file" id="claim" accept=".pdf">
 <button class="preview-btn" onclick="previewLocal('claim')">Preview</button>
@@ -508,106 +532,107 @@ width:100%;
 </div>
 
 <div class="mini-grid">
-
 <div class="mini-card">
 <div class="icon">📄</div>
-<div>
-<div class="mini-label">Policy Status</div>
-<div class="mini-value" id="policyStatus">Waiting</div>
-</div>
+<div><div class="mini-label">Policy Status</div><div class="mini-value" id="policyStatus">Waiting</div></div>
 </div>
 
 <div class="mini-card">
 <div class="icon">👤</div>
-<div>
-<div class="mini-label">Name Match</div>
-<div class="mini-value" id="nameStatus">Waiting</div>
-</div>
+<div><div class="mini-label">Name Match</div><div class="mini-value" id="nameStatus">Waiting</div></div>
 </div>
 
 <div class="mini-card">
 <div class="icon">💰</div>
-<div>
-<div class="mini-label">Amount Check</div>
-<div class="mini-value" id="amountStatus">Waiting</div>
-</div>
+<div><div class="mini-label">Amount Check</div><div class="mini-value" id="amountStatus">Waiting</div></div>
 </div>
 
 <div class="mini-card">
 <div class="icon">🎯</div>
-<div>
-<div class="mini-label">Confidence</div>
-<div class="mini-value" id="confidenceText">0%</div>
+<div><div class="mini-label">Confidence</div><div class="mini-value" id="confidenceText">0%</div></div>
 </div>
-</div>
-
 </div>
 
 <pre id="out">Upload files and run analysis.</pre>
 
+<div class="reject-box" id="rejectBox">
+<div class="reject-title">Claim Rejected</div>
+<ul class="reason-list" id="reasonList"></ul>
+<div class="next-steps">
+<b>Suggested Next Steps:</b><br>
+• Recheck uploaded documents<br>
+• Verify policy number / holder details<br>
+• Upload updated claim papers<br>
+• Contact support if issue continues
 </div>
+</div>
+
+</div>
+
+<div class="history">
+<h3>Recent Analyses</h3>
+<div id="historyList"></div>
+</div>
+
 </div>
 </div>
 
 <!-- Preview Modal -->
 <div class="modal" id="previewModal">
 <div class="modal-box">
-
 <div class="modal-top">
 <span>Document Preview</span>
 <button class="close-btn" onclick="closePreview()">Close</button>
 </div>
-
 <iframe id="previewFrame"></iframe>
-
 </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
-const SUPABASE_URL = "https://ubdiwfsfjaaxnvygdclx.supabase.co";
-const SUPABASE_KEY = "YOUR_SUPABASE_KEY";
-const BACKEND = "https://claim-reflex-ai.onrender.com";
+const SUPABASE_URL="https://ubdiwfsfjaaxnvygdclx.supabase.co";
+const SUPABASE_KEY="YOUR_SUPABASE_KEY";
+const BACKEND="https://claim-reflex-ai.onrender.com";
 
 const { createClient } = supabase;
-const supabaseClient = createClient(SUPABASE_URL,SUPABASE_KEY);
+const supabaseClient=createClient(SUPABASE_URL,SUPABASE_KEY);
 
-let reportData = {
-decision:"Pending",
-confidence:"0%",
-reason:"No report available",
-policy:"Waiting",
-name:"Waiting",
-amount:"Waiting"
-};
+let reportData={};
 
 function logout(){
 localStorage.clear();
 window.location.href="index.html";
 }
 
-function previewLocal(inputId){
-const fileInput = document.getElementById(inputId);
-const file = fileInput.files[0];
-
-if(!file){
-alert("Please choose a PDF first.");
-return;
-}
-
-const url = URL.createObjectURL(file);
-document.getElementById("previewFrame").src = url;
-document.getElementById("previewModal").style.display = "flex";
+function previewLocal(id){
+const file=document.getElementById(id).files[0];
+if(!file){alert("Choose a PDF first.");return;}
+document.getElementById("previewFrame").src=URL.createObjectURL(file);
+document.getElementById("previewModal").style.display="flex";
 }
 
 function closePreview(){
-document.getElementById("previewModal").style.display = "none";
-document.getElementById("previewFrame").src = "";
+document.getElementById("previewModal").style.display="none";
+document.getElementById("previewFrame").src="";
+}
+
+function setProgress(v){
+document.getElementById("fill").style.width=v+"%";
+}
+
+function setBadge(text,type){
+const b=document.getElementById("badge");
+b.className="badge "+type;
+b.innerText=text;
+}
+
+function wait(ms){
+return new Promise(r=>setTimeout(r,ms));
 }
 
 async function uploadFile(file){
-const fileName = Date.now() + "_" + file.name;
+const fileName=Date.now()+"_"+file.name;
 
 const { error } = await supabaseClient.storage
 .from("documents")
@@ -622,189 +647,189 @@ const { data } = supabaseClient.storage
 return data.publicUrl;
 }
 
-function setProgress(v){
-document.getElementById("fill").style.width = v + "%";
+function saveHistory(decision,confidence,reason){
+let items=JSON.parse(localStorage.getItem("claimHistory") || "[]");
+
+items.unshift({
+date:new Date().toLocaleString(),
+decision,
+confidence,
+reason
+});
+
+items=items.slice(0,5);
+
+localStorage.setItem("claimHistory",JSON.stringify(items));
+renderHistory();
 }
 
-function setBadge(text,type){
-const badge = document.getElementById("badge");
-badge.className = "badge " + type;
-badge.innerText = text;
+function renderHistory(){
+const list=document.getElementById("historyList");
+const items=JSON.parse(localStorage.getItem("claimHistory") || "[]");
+
+if(items.length===0){
+list.innerHTML='<div class="history-item">No analyses yet.</div>';
+return;
 }
 
-function wait(ms){
-return new Promise(resolve => setTimeout(resolve,ms));
+list.innerHTML=items.map(i=>`
+<div class="history-item ${i.decision==='Rejected'?'history-red':'history-green'}">
+<b>${i.decision}</b> • ${i.confidence}<br>
+${i.date}<br>
+${i.reason}
+</div>
+`).join("");
 }
 
 async function run(){
 
-const msg = document.getElementById("msg");
-const out = document.getElementById("out");
-const btn = document.getElementById("analyzeBtn");
-const reportBtn = document.getElementById("reportBtn");
+const msg=document.getElementById("msg");
+const out=document.getElementById("out");
+const btn=document.getElementById("analyzeBtn");
+const reportBtn=document.getElementById("reportBtn");
+const rejectBox=document.getElementById("rejectBox");
 
 try{
 
-const p = document.getElementById("policy").files[0];
-const c = document.getElementById("claim").files[0];
+const p=document.getElementById("policy").files[0];
+const c=document.getElementById("claim").files[0];
 
 if(!p || !c){
-msg.innerText = "Please upload both Policy and Claim documents.";
+msg.innerText="Please upload both Policy and Claim documents.";
 return;
 }
 
-reportBtn.style.display = "none";
-btn.disabled = true;
-btn.innerText = "Processing...";
-msg.classList.add("pulse");
+rejectBox.style.display="none";
+reportBtn.style.display="none";
+btn.disabled=true;
+btn.innerText="Processing...";
 
 setBadge("Processing","blue");
-setProgress(0);
+setProgress(10);
+msg.innerText="Uploading documents...";
 
-msg.innerText = "⬆ Uploading documents...";
+const policy_url=await uploadFile(p);
+const claim_url=await uploadFile(c);
+
 await wait(500);
-setProgress(15);
-
-const policy_url = await uploadFile(p);
-const claim_url = await uploadFile(c);
-
-msg.innerText = "📄 Extracting document text...";
-await wait(700);
-setProgress(35);
-
-msg.innerText = "🔍 Running validations...";
-await wait(700);
 setProgress(55);
+msg.innerText="AI reviewing claim...";
 
-msg.innerText = "🤖 AI reviewing claim...";
-setProgress(75);
-
-const res = await fetch(BACKEND + "/process",{
+const res=await fetch(BACKEND + "/process",{
 method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-policy_url,
-claim_url
-})
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({policy_url,claim_url})
 });
 
-const data = await res.json();
+const data=await res.json();
 
-msg.innerText = "✅ Finalizing decision...";
-await wait(700);
 setProgress(100);
 
-msg.classList.remove("pulse");
+if(data.status==="processed"){
 
-if(data.status === "processed"){
-
-const confidence =
-Math.round((data.final.confidence || 0.85) * 100) + "%";
+const confidence=Math.round((data.final.confidence || 0.85)*100)+"%";
 
 setBadge(data.final.decision || "Approved","green");
 
-document.getElementById("policyStatus").innerText = "Active ✅";
-document.getElementById("nameStatus").innerText = "Matched ✅";
-document.getElementById("amountStatus").innerText = "Eligible ✅";
-document.getElementById("confidenceText").innerText = confidence;
+document.getElementById("policyStatus").innerText="Active ✅";
+document.getElementById("nameStatus").innerText="Matched ✅";
+document.getElementById("amountStatus").innerText="Eligible ✅";
+document.getElementById("confidenceText").innerText=confidence;
 
-out.innerText =
-"Decision: " + data.final.decision + "\n\n" +
-"Reason:\n" + data.final.reason;
+out.innerText=
+"Decision: " + data.final.decision + "\n\nReason:\n" + data.final.reason;
 
-msg.innerText = "🎉 Claim processed successfully.";
+msg.innerText="Claim processed successfully.";
 
-reportData = {
+reportBtn.style.display="block";
+
+reportData={
 decision:data.final.decision,
-confidence:confidence,
+confidence,
 reason:data.final.reason,
 policy:"Active",
 name:"Matched",
 amount:"Eligible"
 };
 
-reportBtn.style.display = "block";
+saveHistory(data.final.decision,confidence,data.final.reason);
 
-}
-else if(data.status === "rejected"){
+}else if(data.status==="rejected"){
 
 setBadge("Rejected","red");
 
-document.getElementById("policyStatus").innerText = "Failed ❌";
-document.getElementById("nameStatus").innerText = "Mismatch ❌";
-document.getElementById("amountStatus").innerText = "Blocked ❌";
-document.getElementById("confidenceText").innerText = "32%";
+document.getElementById("policyStatus").innerText="Failed ❌";
+document.getElementById("nameStatus").innerText="Mismatch ❌";
+document.getElementById("amountStatus").innerText="Blocked ❌";
+document.getElementById("confidenceText").innerText="32%";
 
-out.innerText =
-"Claim Rejected\n\nReasons:\n" +
-(data.errors || []).join("\n");
+out.innerText="Claim Rejected";
 
-msg.innerText = "❌ Claim validation failed.";
+msg.innerText="Validation failed.";
 
-reportData = {
+const reasons=data.errors || ["Unknown issue"];
+
+document.getElementById("reasonList").innerHTML=
+reasons.map(r=>"<li>"+r+"</li>").join("");
+
+rejectBox.style.display="block";
+reportBtn.style.display="block";
+
+reportData={
 decision:"Rejected",
 confidence:"32%",
-reason:(data.errors || []).join(", "),
+reason:reasons.join(", "),
 policy:"Failed",
 name:"Mismatch",
 amount:"Blocked"
 };
 
-reportBtn.style.display = "block";
+saveHistory("Rejected","32%",reasons.join(", "));
 
-}
-else{
+}else{
 setBadge("Error","red");
-out.innerText = JSON.stringify(data,null,2);
+out.innerText=JSON.stringify(data,null,2);
 }
 
-btn.disabled = false;
-btn.innerText = "⚡ Analyze Claim";
+btn.disabled=false;
+btn.innerText="⚡ Analyze Claim";
 
 }catch(err){
 
-msg.classList.remove("pulse");
-msg.innerText = "❌ " + err.message;
+msg.innerText="Error: "+err.message;
 setBadge("Error","red");
-out.innerText = err.message;
-
-btn.disabled = false;
-btn.innerText = "⚡ Analyze Claim";
+btn.disabled=false;
+btn.innerText="⚡ Analyze Claim";
 }
-
 }
 
 function downloadReport(){
 
 const { jsPDF } = window.jspdf;
-const doc = new jsPDF();
+const doc=new jsPDF();
 
 doc.setFontSize(20);
 doc.text("Claim Reflex AI Report",20,20);
 
 doc.setFontSize(11);
-doc.text("Generated: " + new Date().toLocaleString(),20,30);
+doc.text("Generated: "+new Date().toLocaleString(),20,30);
 
 doc.setFontSize(14);
-doc.text("Decision: " + reportData.decision,20,45);
-doc.text("Confidence: " + reportData.confidence,20,55);
-
-doc.text("Policy Status: " + reportData.policy,20,70);
-doc.text("Name Match: " + reportData.name,20,80);
-doc.text("Amount Check: " + reportData.amount,20,90);
+doc.text("Decision: "+reportData.decision,20,45);
+doc.text("Confidence: "+reportData.confidence,20,55);
+doc.text("Policy Status: "+reportData.policy,20,70);
+doc.text("Name Match: "+reportData.name,20,80);
+doc.text("Amount Check: "+reportData.amount,20,90);
 
 doc.text("Reason:",20,110);
 
-const lines = doc.splitTextToSize(reportData.reason,170);
+const lines=doc.splitTextToSize(reportData.reason || "",170);
 doc.text(lines,20,120);
-
-doc.setFontSize(10);
-doc.text("Generated by Claim Reflex AI",20,280);
 
 doc.save("Claim-Reflex-Report.pdf");
 }
+
+renderHistory();
 </script>
 
 </body>
