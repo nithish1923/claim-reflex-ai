@@ -1,39 +1,43 @@
 import re
 
+def find_match(patterns, text):
+    for pattern in patterns:
+        match = re.search(pattern, text, re.IGNORECASE)
+        if match:
+            return match.group(1).strip()
+    return None
+
+
 def extract_fields(text):
-    data = {}
 
-    # More flexible patterns
-    policy_no = re.search(
-        r'(policy\s*(no|number|id)?|policy id)\s*[:\-]?\s*([A-Z0-9\-\/]+)',
-        text,
-        re.IGNORECASE
-    )
+    policy_no = find_match([
+        r'Policy\s*No[:\-]?\s*([A-Z0-9\-\/]+)',
+        r'Policy\s*Number[:\-]?\s*([A-Z0-9\-\/]+)'
+    ], text)
 
-    claim_no = re.search(
-        r'(claim\s*(no|number|id)?|reference\s*no)\s*[:\-]?\s*([A-Z0-9\-\/]+)',
-        text,
-        re.IGNORECASE
-    )
+    claim_no = find_match([
+        r'Claim\s*No[:\-]?\s*([A-Z0-9\-\/]+)',
+        r'Claim\s*Number[:\-]?\s*([A-Z0-9\-\/]+)'
+    ], text)
 
-    customer = re.search(
-        r'(name|customer name|insured name)\s*[:\-]?\s*([A-Za-z ]+)',
-        text,
-        re.IGNORECASE
-    )
+    amount = find_match([
+        r'₹\s*([\d,]+)',
+        r'Rs\.?\s*([\d,]+)',
+        r'INR\s*([\d,]+)',
+        r'Amount[:\-]?\s*([\d,]+)'
+    ], text)
 
-    amount = re.search(
-        r'(amount|claim amount|total)\s*[:\-]?\s*([\d,]+)',
-        text,
-        re.IGNORECASE
-    )
+    claim_policy = find_match([
+        r'Policy\s*No[:\-]?\s*([A-Z0-9\-\/]+)',
+        r'Policy\s*Number[:\-]?\s*([A-Z0-9\-\/]+)'
+    ], text)
 
-    data["policy_no"] = policy_no.group(3).strip() if policy_no else None
-    data["claim_no"] = claim_no.group(3).strip() if claim_no else None
-    data["customer_name"] = customer.group(2).strip() if customer else None
-    data["amount"] = amount.group(2).strip() if amount else None
-
-    return data
+    return {
+        "policy_no": policy_no,
+        "claim_no": claim_no,
+        "amount": amount,
+        "claim_policy": claim_policy
+    }
 
 
 def validate(policy_text, claim_text):
@@ -43,20 +47,18 @@ def validate(policy_text, claim_text):
 
     errors = []
 
-    # Mandatory checks
     if not p["policy_no"]:
         errors.append("Missing policy number")
 
     if not c["claim_no"]:
         errors.append("Missing claim number")
 
-    # Smart comparison
-    if p["policy_no"] and c["claim_no"]:
-        if p["policy_no"] not in claim_text:
-            errors.append("Policy number not linked in claim file")
-
-    # Optional checks
-    if c["amount"] is None:
+    if not c["amount"]:
         errors.append("Missing claim amount")
+
+    # Better policy compare
+    if p["policy_no"] and c["claim_policy"]:
+        if p["policy_no"].strip().lower() != c["claim_policy"].strip().lower():
+            errors.append("Policy number mismatch")
 
     return len(errors) == 0, errors
