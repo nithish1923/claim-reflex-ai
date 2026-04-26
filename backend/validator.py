@@ -2,17 +2,19 @@ import re
 from datetime import datetime
 
 # ==========================================================
-# CLAIM REFLEX AI - UPDATED FINAL validator.py
+# CLAIM REFLEX AI - FULL & FINAL validator.py
 # Covers:
 # ✔ Policy Number Match
 # ✔ Claim Number Check
-# ✔ Holder Name Fuzzy Match
-# ✔ Case Insensitive Names
-# ✔ OCR / Extra Text Handling
+# ✔ Mandatory Holder Names
+# ✔ Fuzzy Name Matching
+# ✔ Case Insensitive Checks
+# ✔ OCR / Extra Spaces Handling
 # ✔ Policy Expiry Check
 # ✔ Missing Fields
 # ✔ Claim Amount Check
-# ✔ Debug Logs
+# ✔ Clean Date Parsing
+# ✔ Separate Policy / Claim Extraction
 # ==========================================================
 
 
@@ -51,15 +53,15 @@ def names_match(name1, name2):
     n1 = normalize_name(name1)
     n2 = normalize_name(name2)
 
-    # Exact
+    # Exact match
     if n1 == n2:
         return True
 
-    # Partial
+    # Partial match
     if n1 in n2 or n2 in n1:
         return True
 
-    # Word overlap
+    # Word overlap match
     words1 = set(n1.split())
     words2 = set(n2.split())
 
@@ -116,11 +118,11 @@ def extract_policy(text):
         ], text),
 
         "holder_name": find([
-            r'policy holder name\s*:\s*([A-Za-z ]+?)(?:vehicle|plan|valid|sum insured|terms|$)'
+            r'policy holder name\s*:\s*([A-Za-z ]+?)\s*(?:policy no|vehicle|plan|valid|sum insured|terms|$)'
         ], text),
 
         "valid_to": find([
-            r'valid to\s*:\s*([0-9A-Za-z\-\/ ]+)'
+            r'valid to\s*:\s*([0-9\-\/]+)'
         ], text)
     }
 
@@ -143,7 +145,7 @@ def extract_claim(text):
         ], text),
 
         "claim_name": find([
-            r'claimant name\s*:\s*([A-Za-z ]+?)(?:incident|claim amount|reason|garage|documents|$)'
+            r'claimant name\s*:\s*([A-Za-z ]+?)\s*(?:incident|claim amount|reason|garage|documents|$)'
         ], text),
 
         "claim_amount": find([
@@ -163,9 +165,6 @@ def validate(policy_text, claim_text):
     policy = extract_policy(policy_text)
     claim = extract_claim(claim_text)
 
-    print("POLICY DATA =", policy)
-    print("CLAIM DATA =", claim)
-
     errors = []
 
     # ------------------------------------------------------
@@ -184,6 +183,12 @@ def validate(policy_text, claim_text):
     if not claim["claim_amount"]:
         errors.append("Missing claim amount")
 
+    if not policy["holder_name"]:
+        errors.append("Missing policy holder name")
+
+    if not claim["claim_name"]:
+        errors.append("Missing claimant name")
+
     # ------------------------------------------------------
     # POLICY NUMBER MATCH
     # ------------------------------------------------------
@@ -201,7 +206,7 @@ def validate(policy_text, claim_text):
             errors.append("Holder name mismatch")
 
     # ------------------------------------------------------
-    # EXPIRY CHECK
+    # POLICY EXPIRY CHECK
     # ------------------------------------------------------
 
     if policy["valid_to"]:
