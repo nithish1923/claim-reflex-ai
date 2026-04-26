@@ -2,40 +2,42 @@ import re
 from datetime import datetime
 
 # ==========================================================
-# CLAIM REFLEX AI - ENTERPRISE VALIDATOR
+# CLAIM REFLEX AI - FINAL ROBUST VALIDATOR
 # Covers:
-# ✔ Policy Number
-# ✔ Claim Number
-# ✔ Holder Name
-# ✔ Date Expiry
-# ✔ Claim Amount
 # ✔ Policy Number Match
-# ✔ Name Fuzzy Match
-# ✔ Future Claim Date
-# ✔ Duplicate Basic Checks
-# ✔ Upper/lower case
-# ✔ Extra spaces
-# ✔ Missing fields
-# ✔ Different label formats
+# ✔ Claim Number
+# ✔ Holder Name Match (fuzzy)
+# ✔ Case insensitive
+# ✔ Spaces / hyphen / slash issues
+# ✔ Policy Expiry
+# ✔ Policy Start Date
+# ✔ Claim Date Future Check
+# ✔ Claim Date Within Coverage
+# ✔ Claim Amount Validation
+# ✔ Missing Fields
+# ✔ OCR / PDF messy spacing support
+# ✔ Multiple label formats
 # ==========================================================
 
 
 # ----------------------------------------------------------
-# Helpers
+# HELPERS
 # ----------------------------------------------------------
 
 def clean_text(text):
     if not text:
         return ""
+
     text = text.replace("\n", " ")
-    text = re.sub(r'\s+', ' ', text)
+    text = re.sub(r"\s+", " ", text)
     return text.strip()
 
 
 def normalize(value):
     if not value:
         return ""
-    return re.sub(r'[^a-z0-9]', '', value.lower())
+
+    return re.sub(r"[^a-z0-9]", "", value.lower())
 
 
 def normalize_name(name):
@@ -43,8 +45,8 @@ def normalize_name(name):
         return ""
 
     name = name.lower()
-    name = re.sub(r'[^a-z ]', ' ', name)
-    name = re.sub(r'\s+', ' ', name)
+    name = re.sub(r"[^a-z ]", " ", name)
+    name = re.sub(r"\s+", " ", name)
     return name.strip()
 
 
@@ -62,10 +64,10 @@ def names_match(name1, name2):
         return True
 
     # token overlap
-    s1 = set(n1.split())
-    s2 = set(n2.split())
+    words1 = set(n1.split())
+    words2 = set(n2.split())
 
-    common = s1.intersection(s2)
+    common = words1.intersection(words2)
 
     if len(common) >= 2:
         return True
@@ -86,7 +88,7 @@ def parse_date(date_str):
         "%d %B %Y",
         "%Y-%m-%d",
         "%d-%m-%y",
-        "%d/%m/%y"
+        "%d/%m/%y",
     ]
 
     for fmt in formats:
@@ -110,44 +112,54 @@ def find_value(patterns, text):
 
 
 # ----------------------------------------------------------
-# Field Extraction
+# FIELD EXTRACTION
 # ----------------------------------------------------------
 
 def extract_fields(text):
 
     text = clean_text(text)
 
-    policy_no = find_value([
+    data = {}
+
+    # Policy Number
+    data["policy_no"] = find_value([
         r'policy\s*(?:no|number|id)?\s*[:\-]?\s*([A-Z0-9\-\/]+)'
     ], text)
 
-    claim_no = find_value([
+    # Claim Number
+    data["claim_no"] = find_value([
         r'claim\s*(?:no|number|id|reference)?\s*[:\-]?\s*([A-Z0-9\-\/]+)'
     ], text)
 
-    holder_name = find_value([
+    # Policy holder
+    data["holder_name"] = find_value([
         r'(?:policy holder name|holder name|insured name|customer name)\s*[:\-]?\s*([A-Za-z ]+)'
     ], text)
 
-    claim_name = find_value([
-        r'(?:claimant name|claim holder name|customer name|insured name)\s*[:\-]?\s*([A-Za-z ]+)'
+    # Claim holder
+    data["claim_name"] = find_value([
+        r'(?:claimant name|claim holder name|insured name|customer name)\s*[:\-]?\s*([A-Za-z ]+)'
     ], text)
 
-    valid_from = find_value([
+    # Valid from
+    data["valid_from"] = find_value([
         r'valid from\s*[:\-]?\s*([0-9A-Za-z\/\- ]+)'
     ], text)
 
-    valid_to = find_value([
+    # Valid to
+    data["valid_to"] = find_value([
         r'valid to\s*[:\-]?\s*([0-9A-Za-z\/\- ]+)',
         r'expiry date\s*[:\-]?\s*([0-9A-Za-z\/\- ]+)'
     ], text)
 
-    claim_date = find_value([
+    # Claim date
+    data["claim_date"] = find_value([
         r'incident date\s*[:\-]?\s*([0-9A-Za-z\/\- ]+)',
         r'claim date\s*[:\-]?\s*([0-9A-Za-z\/\- ]+)'
     ], text)
 
-    claim_amount = find_value([
+    # Amount
+    data["claim_amount"] = find_value([
         r'claim amount\s*[:\-]?\s*₹?\s*([\d,]+)',
         r'amount\s*[:\-]?\s*₹?\s*([\d,]+)',
         r'₹\s*([\d,]+)',
@@ -155,20 +167,11 @@ def extract_fields(text):
         r'inr\s*([\d,]+)'
     ], text)
 
-    return {
-        "policy_no": policy_no,
-        "claim_no": claim_no,
-        "holder_name": holder_name,
-        "claim_name": claim_name,
-        "valid_from": valid_from,
-        "valid_to": valid_to,
-        "claim_date": claim_date,
-        "claim_amount": claim_amount
-    }
+    return data
 
 
 # ----------------------------------------------------------
-# Main Validation Engine
+# MAIN VALIDATION
 # ----------------------------------------------------------
 
 def validate(policy_text, claim_text):
@@ -179,8 +182,10 @@ def validate(policy_text, claim_text):
     errors = []
     warnings = []
 
+    today = datetime.today()
+
     # ======================================================
-    # REQUIRED FIELD CHECKS
+    # REQUIRED CHECKS
     # ======================================================
 
     if not policy["policy_no"]:
@@ -202,8 +207,10 @@ def validate(policy_text, claim_text):
     # POLICY NUMBER MATCH
     # ======================================================
 
-    if policy["policy_no"]:
-        if normalize(policy["policy_no"]) not in normalize(claim_text):
+    claim_policy = claim["policy_no"]
+
+    if policy["policy_no"] and claim_policy:
+        if normalize(policy["policy_no"]) != normalize(claim_policy):
             errors.append("Policy number mismatch")
 
     # ======================================================
@@ -215,64 +222,65 @@ def validate(policy_text, claim_text):
             errors.append("Holder name mismatch")
 
     # ======================================================
-    # POLICY DATE VALIDATION
+    # POLICY START CHECK
     # ======================================================
 
-    today = datetime.today()
+    if policy["valid_from"]:
+        start_date = parse_date(policy["valid_from"])
+
+        if start_date and today < start_date:
+            errors.append("Policy not active yet")
+
+    # ======================================================
+    # POLICY EXPIRY CHECK
+    # ======================================================
 
     if policy["valid_to"]:
-
         expiry = parse_date(policy["valid_to"])
 
-        if expiry:
-            if today > expiry:
-                errors.append("Policy expired")
-
-    if policy["valid_from"]:
-
-        start = parse_date(policy["valid_from"])
-
-        if start:
-            if today < start:
-                errors.append("Policy not active yet")
+        if expiry and today > expiry:
+            errors.append("Policy expired")
 
     # ======================================================
     # CLAIM DATE CHECK
     # ======================================================
 
     if claim["claim_date"]:
-
         cdate = parse_date(claim["claim_date"])
 
         if cdate:
+
             if cdate > today:
-                errors.append("Claim date is in future")
+                errors.append("Claim date in future")
 
-            if policy["valid_from"] and policy["valid_to"]:
+            start = parse_date(policy["valid_from"]) if policy["valid_from"] else None
+            end = parse_date(policy["valid_to"]) if policy["valid_to"] else None
 
-                start = parse_date(policy["valid_from"])
-                end = parse_date(policy["valid_to"])
+            if start and cdate < start:
+                errors.append("Claim before policy start date")
 
-                if start and end:
-                    if cdate < start or cdate > end:
-                        errors.append("Claim date outside policy coverage period")
+            if end and cdate > end:
+                errors.append("Claim after policy expiry")
 
     # ======================================================
     # CLAIM AMOUNT CHECK
     # ======================================================
 
     if claim["claim_amount"]:
+        try:
+            amount = int(claim["claim_amount"].replace(",", ""))
 
-        amt = int(claim["claim_amount"].replace(",", ""))
+            if amount <= 0:
+                errors.append("Invalid claim amount")
 
-        if amt <= 0:
-            errors.append("Invalid claim amount")
+            if amount > 10000000:
+                warnings.append("Very high claim amount")
 
-        if amt > 10000000:
-            warnings.append("Very high claim amount")
+        except:
+            errors.append("Invalid claim amount format")
 
     # ======================================================
-    # DUPLICATE BASIC SANITY
+    # DUPLICATE SANITY CHECK
     # ======================================================
 
     if policy["policy_no"] and claim["claim_no"]:
