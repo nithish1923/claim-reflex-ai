@@ -30,11 +30,18 @@ async function signup() {
 
   const { error } = await supabaseClient.auth.signUp({
     email: email,
-    password: password
+    password: password,
+    options: {
+      emailRedirectTo: "https://claim-reflex-ai-b1l2.vercel.app"
+    }
   })
 
-  document.getElementById("msg").innerText =
-    error ? error.message : "Signup successful"
+  if (error) {
+    document.getElementById("msg").innerText = error.message
+  } else {
+    document.getElementById("msg").innerText =
+      "Check your email and verify account before login."
+  }
 }
 
 async function login() {
