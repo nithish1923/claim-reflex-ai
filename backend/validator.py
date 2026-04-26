@@ -1,24 +1,76 @@
 import re
 from datetime import datetime
 
+# ==========================================================
+# CLAIM REFLEX AI - UPDATED FINAL validator.py
+# Covers:
+# ✔ Policy Number Match
+# ✔ Claim Number Check
+# ✔ Holder Name Fuzzy Match
+# ✔ Case Insensitive Names
+# ✔ OCR / Extra Text Handling
+# ✔ Policy Expiry Check
+# ✔ Missing Fields
+# ✔ Claim Amount Check
+# ✔ Debug Logs
+# ==========================================================
 
-# -----------------------------------
-# Helpers
-# -----------------------------------
+
+# ----------------------------------------------------------
+# HELPERS
+# ----------------------------------------------------------
 
 def clean_text(text):
     if not text:
         return ""
-    return re.sub(r"\s+", " ", text).strip()
+
+    text = text.replace("\n", " ")
+    text = re.sub(r"\s+", " ", text)
+    return text.strip()
 
 
 def normalize(value):
     if not value:
         return ""
+
     return re.sub(r"[^a-z0-9]", "", value.lower())
 
 
+def normalize_name(name):
+    if not name:
+        return ""
+
+    name = name.lower()
+    name = re.sub(r"[^a-z ]", " ", name)
+    name = re.sub(r"\s+", " ", name)
+    return name.strip()
+
+
+def names_match(name1, name2):
+
+    n1 = normalize_name(name1)
+    n2 = normalize_name(name2)
+
+    # Exact
+    if n1 == n2:
+        return True
+
+    # Partial
+    if n1 in n2 or n2 in n1:
+        return True
+
+    # Word overlap
+    words1 = set(n1.split())
+    words2 = set(n2.split())
+
+    if len(words1.intersection(words2)) >= 2:
+        return True
+
+    return False
+
+
 def parse_date(date_str):
+
     if not date_str:
         return None
 
@@ -26,7 +78,8 @@ def parse_date(date_str):
         "%d-%m-%Y",
         "%d/%m/%Y",
         "%Y-%m-%d",
-        "%d-%b-%Y"
+        "%d-%b-%Y",
+        "%d %b %Y"
     ]
 
     for fmt in formats:
@@ -39,18 +92,22 @@ def parse_date(date_str):
 
 
 def find(patterns, text):
+
     for pattern in patterns:
-        m = re.search(pattern, text, re.I)
-        if m:
-            return m.group(1).strip()
+        match = re.search(pattern, text, re.IGNORECASE)
+
+        if match:
+            return match.group(1).strip()
+
     return None
 
 
-# -----------------------------------
-# Extract fields
-# -----------------------------------
+# ----------------------------------------------------------
+# EXTRACT POLICY DATA
+# ----------------------------------------------------------
 
 def extract_policy(text):
+
     text = clean_text(text)
 
     return {
@@ -59,16 +116,21 @@ def extract_policy(text):
         ], text),
 
         "holder_name": find([
-            r'policy holder name\s*:\s*([A-Za-z ]+)'
+            r'policy holder name\s*:\s*([A-Za-z ]+?)(?:vehicle|plan|valid|sum insured|terms|$)'
         ], text),
 
         "valid_to": find([
-            r'valid to\s*:\s*([0-9\-\/]+)'
+            r'valid to\s*:\s*([0-9A-Za-z\-\/ ]+)'
         ], text)
     }
 
 
+# ----------------------------------------------------------
+# EXTRACT CLAIM DATA
+# ----------------------------------------------------------
+
 def extract_claim(text):
+
     text = clean_text(text)
 
     return {
@@ -81,27 +143,35 @@ def extract_claim(text):
         ], text),
 
         "claim_name": find([
-            r'claimant name\s*:\s*([A-Za-z ]+)'
+            r'claimant name\s*:\s*([A-Za-z ]+?)(?:incident|claim amount|reason|garage|documents|$)'
         ], text),
 
         "claim_amount": find([
-            r'claim amount\s*:\s*₹?\s*([\d,]+)'
+            r'claim amount\s*:\s*₹?\s*([\d,]+)',
+            r'amount\s*:\s*₹?\s*([\d,]+)',
+            r'₹\s*([\d,]+)'
         ], text)
     }
 
 
-# -----------------------------------
-# Main validate
-# -----------------------------------
+# ----------------------------------------------------------
+# MAIN VALIDATION
+# ----------------------------------------------------------
 
 def validate(policy_text, claim_text):
 
     policy = extract_policy(policy_text)
     claim = extract_claim(claim_text)
 
+    print("POLICY DATA =", policy)
+    print("CLAIM DATA =", claim)
+
     errors = []
 
-    # Required fields
+    # ------------------------------------------------------
+    # REQUIRED FIELD CHECKS
+    # ------------------------------------------------------
+
     if not policy["policy_no"]:
         errors.append("Missing policy number")
 
@@ -114,21 +184,35 @@ def validate(policy_text, claim_text):
     if not claim["claim_amount"]:
         errors.append("Missing claim amount")
 
-    # Policy number exact compare
+    # ------------------------------------------------------
+    # POLICY NUMBER MATCH
+    # ------------------------------------------------------
+
     if policy["policy_no"] and claim["policy_no"]:
         if normalize(policy["policy_no"]) != normalize(claim["policy_no"]):
             errors.append("Policy number mismatch")
 
-    # Name compare
+    # ------------------------------------------------------
+    # HOLDER NAME MATCH
+    # ------------------------------------------------------
+
     if policy["holder_name"] and claim["claim_name"]:
-        if normalize(policy["holder_name"]) != normalize(claim["claim_name"]):
+        if not names_match(policy["holder_name"], claim["claim_name"]):
             errors.append("Holder name mismatch")
 
-    # Expiry
+    # ------------------------------------------------------
+    # EXPIRY CHECK
+    # ------------------------------------------------------
+
     if policy["valid_to"]:
-        dt = parse_date(policy["valid_to"])
-        if dt and datetime.today() > dt:
+        expiry = parse_date(policy["valid_to"])
+
+        if expiry and datetime.today() > expiry:
             errors.append("Policy expired")
+
+    # ------------------------------------------------------
+    # FINAL RESULT
+    # ------------------------------------------------------
 
     if errors:
         return False, errors
