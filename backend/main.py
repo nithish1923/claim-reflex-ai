@@ -31,11 +31,15 @@ def home():
 @app.post("/process")
 def process_claim(data: ClaimRequest):
     try:
-        # Step 1: Extract text from PDFs
         policy_text = extract_text_from_url(data.policy_url)
         claim_text = extract_text_from_url(data.claim_url)
 
-        # Step 2: Validation
+        print("===== POLICY TEXT =====")
+        print(policy_text[:2000])
+
+        print("===== CLAIM TEXT =====")
+        print(claim_text[:2000])
+
         is_valid, errors = validate(policy_text, claim_text)
 
         if not is_valid:
@@ -44,11 +48,9 @@ def process_claim(data: ClaimRequest):
                 "errors": errors
             }
 
-        # Step 3: AI Agents
         approve_output = agent_approve(policy_text, claim_text)
         reject_output = agent_reject(policy_text, claim_text)
 
-        # Step 4: Reflection (final decision)
         final = reflection(approve_output, reject_output)
 
         return {
@@ -62,4 +64,5 @@ def process_claim(data: ClaimRequest):
         return {
             "status": "error",
             "message": str(e)
+        }
         }
