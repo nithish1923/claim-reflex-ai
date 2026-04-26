@@ -65,4 +65,3 @@ def process_claim(data: ClaimRequest):
             "status": "error",
             "message": str(e)
         }
-        }
