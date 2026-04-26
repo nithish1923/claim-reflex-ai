@@ -1,47 +1,17 @@
 import re
 
-def find_match(patterns, text):
-    for pattern in patterns:
-        match = re.search(pattern, text, re.IGNORECASE)
-        if match:
-            return match.group(1).strip()
-    return None
-
-
 def extract_fields(text):
-
-    policy_no = find_match([
-        r'Policy\s*No[:\-]?\s*([A-Z0-9\-\/]+)',
-        r'Policy\s*Number[:\-]?\s*([A-Z0-9\-\/]+)'
-    ], text)
-
-    claim_no = find_match([
-        r'Claim\s*No[:\-]?\s*([A-Z0-9\-\/]+)',
-        r'Claim\s*Number[:\-]?\s*([A-Z0-9\-\/]+)'
-    ], text)
-
-    amount = find_match([
-        r'₹\s*([\d,]+)',
-        r'Rs\.?\s*([\d,]+)',
-        r'INR\s*([\d,]+)',
-        r'Amount[:\-]?\s*([\d,]+)'
-    ], text)
-
-    claim_policy = find_match([
-        r'Policy\s*No[:\-]?\s*([A-Z0-9\-\/]+)',
-        r'Policy\s*Number[:\-]?\s*([A-Z0-9\-\/]+)'
-    ], text)
+    policy = re.search(r'Policy\s*(No|Number)?\s*[:\-]?\s*([A-Z0-9\-]+)', text, re.I)
+    claim = re.search(r'Claim\s*(No|Number)?\s*[:\-]?\s*([A-Z0-9\-]+)', text, re.I)
+    amount = re.search(r'(Amount|Claim Amount)\s*[:\-]?\s*([\d,]+)', text, re.I)
 
     return {
-        "policy_no": policy_no,
-        "claim_no": claim_no,
-        "amount": amount,
-        "claim_policy": claim_policy
+        "policy_no": policy.group(2) if policy else None,
+        "claim_no": claim.group(2) if claim else None,
+        "amount": amount.group(2) if amount else None
     }
 
-
 def validate(policy_text, claim_text):
-
     p = extract_fields(policy_text)
     c = extract_fields(claim_text)
 
@@ -56,9 +26,7 @@ def validate(policy_text, claim_text):
     if not c["amount"]:
         errors.append("Missing claim amount")
 
-    # Better policy compare
-    if p["policy_no"] and c["claim_policy"]:
-        if p["policy_no"].strip().lower() != c["claim_policy"].strip().lower():
-            errors.append("Policy number mismatch")
+    if p["policy_no"] and p["policy_no"] not in claim_text:
+        errors.append("Policy mismatch")
 
     return len(errors) == 0, errors
