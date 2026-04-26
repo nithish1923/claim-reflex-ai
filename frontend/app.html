@@ -8,6 +8,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
+<!-- jsPDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
 *{
 margin:0;
@@ -27,7 +30,6 @@ padding:30px;
 overflow-x:hidden;
 }
 
-/* floating glow */
 body::before,
 body::after{
 content:"";
@@ -68,14 +70,8 @@ animation:fadeUp .9s ease;
 }
 
 @keyframes fadeUp{
-from{
-opacity:0;
-transform:translateY(35px);
-}
-to{
-opacity:1;
-transform:translateY(0);
-}
+from{opacity:0;transform:translateY(35px)}
+to{opacity:1;transform:translateY(0)}
 }
 
 .card{
@@ -100,7 +96,6 @@ margin-bottom:28px;
 font-size:38px;
 font-weight:800;
 color:#fff;
-letter-spacing:-1px;
 }
 
 .subtitle{
@@ -134,7 +129,6 @@ transition:.3s ease;
 
 .logout:hover{
 transform:translateY(-2px);
-box-shadow:0 10px 22px rgba(239,68,68,.35);
 }
 
 .grid{
@@ -155,7 +149,6 @@ transition:.35s ease;
 .box:hover{
 transform:translateY(-6px);
 border-color:#38bdf8;
-box-shadow:0 16px 30px rgba(56,189,248,.15);
 }
 
 .box h3{
@@ -177,10 +170,10 @@ padding:12px;
 border-radius:14px;
 border:none;
 background:#fff;
-font-size:14px;
 }
 
-button.process{
+button.process,
+button.report{
 width:100%;
 margin-top:24px;
 padding:16px;
@@ -190,16 +183,24 @@ border:none;
 border-radius:18px;
 cursor:pointer;
 color:#fff;
-background:linear-gradient(90deg,#2563eb,#06b6d4);
 transition:.35s ease;
-box-shadow:0 18px 30px rgba(37,99,235,.28);
 }
 
-button.process:hover{
-transform:translateY(-3px) scale(1.01);
+button.process{
+background:linear-gradient(90deg,#2563eb,#06b6d4);
 }
 
-button.process:disabled{
+button.report{
+background:linear-gradient(90deg,#16a34a,#22c55e);
+display:none;
+}
+
+button.process:hover,
+button.report:hover{
+transform:translateY(-3px);
+}
+
+button:disabled{
 opacity:.65;
 cursor:not-allowed;
 transform:none;
@@ -278,7 +279,6 @@ background:linear-gradient(90deg,#22c55e,#3b82f6);
 transition:1s ease;
 }
 
-/* mini cards */
 .mini-grid{
 display:grid;
 grid-template-columns:1fr 1fr;
@@ -295,12 +295,6 @@ padding:16px;
 border-radius:18px;
 background:rgba(255,255,255,.05);
 border:1px solid rgba(255,255,255,.06);
-transition:.35s ease;
-}
-
-.mini-card:hover{
-transform:translateY(-4px);
-box-shadow:0 12px 24px rgba(0,0,0,.18);
 }
 
 .icon{
@@ -335,7 +329,6 @@ color:#cbd5e1;
 line-height:1.7;
 }
 
-/* pulse loader */
 .pulse{
 animation:pulse 1.1s infinite;
 }
@@ -347,18 +340,12 @@ animation:pulse 1.1s infinite;
 }
 
 @media(max-width:850px){
-.grid{
+.grid,.mini-grid{
 grid-template-columns:1fr;
 }
-
-.mini-grid{
-grid-template-columns:1fr;
-}
-
 .title{
 font-size:30px;
 }
-
 .card{
 padding:22px;
 }
@@ -377,7 +364,6 @@ padding:22px;
 <div class="subtitle">AI Claim & Policy Decision Platform</div>
 <div class="tag">LIVE SYSTEM</div>
 </div>
-
 <button class="logout" onclick="logout()">Logout</button>
 </div>
 
@@ -398,6 +384,7 @@ padding:22px;
 </div>
 
 <button class="process" id="analyzeBtn" onclick="run()">⚡ Analyze Claim</button>
+<button class="report" id="reportBtn" onclick="downloadReport()">⬇ Download PDF Report</button>
 
 <div id="msg">Waiting for documents...</div>
 
@@ -464,6 +451,15 @@ const BACKEND = "https://claim-reflex-ai.onrender.com";
 const { createClient } = supabase;
 const supabaseClient = createClient(SUPABASE_URL,SUPABASE_KEY);
 
+let reportData = {
+decision:"Pending",
+confidence:"0%",
+reason:"No report available",
+policy:"Waiting",
+name:"Waiting",
+amount:"Waiting"
+};
+
 function logout(){
 localStorage.clear();
 window.location.href="index.html";
@@ -504,6 +500,7 @@ async function run(){
 const msg = document.getElementById("msg");
 const out = document.getElementById("out");
 const btn = document.getElementById("analyzeBtn");
+const reportBtn = document.getElementById("reportBtn");
 
 try{
 
@@ -515,6 +512,7 @@ msg.innerText = "Please upload both Policy and Claim documents.";
 return;
 }
 
+reportBtn.style.display = "none";
 btn.disabled = true;
 btn.innerText = "Processing...";
 msg.classList.add("pulse");
@@ -522,31 +520,22 @@ msg.classList.add("pulse");
 setBadge("Processing","blue");
 setProgress(0);
 
-out.innerText = "Initializing AI engine...";
-
-/* Step 1 */
 msg.innerText = "⬆ Uploading documents...";
+await wait(500);
 setProgress(15);
-await wait(600);
 
 const policy_url = await uploadFile(p);
 const claim_url = await uploadFile(c);
 
-/* Step 2 */
 msg.innerText = "📄 Extracting document text...";
-out.innerText = "Reading uploaded policy and claim PDFs...";
 setProgress(35);
-await wait(900);
+await wait(700);
 
-/* Step 3 */
 msg.innerText = "🔍 Running validations...";
-out.innerText = "Checking names, policy number, expiry date...";
 setProgress(55);
-await wait(900);
+await wait(700);
 
-/* Step 4 */
 msg.innerText = "🤖 AI reviewing claim...";
-out.innerText = "Analyzing confidence, risk and eligibility...";
 setProgress(75);
 
 const res = await fetch(BACKEND + "/process",{
@@ -562,38 +551,44 @@ claim_url
 
 const data = await res.json();
 
-/* Step 5 */
 msg.innerText = "✅ Finalizing decision...";
 setProgress(95);
 await wait(700);
-
 setProgress(100);
+
 msg.classList.remove("pulse");
 
-/* Approved */
 if(data.status === "processed"){
 
 const confidence =
-Math.round((data.final.confidence || 0.85) * 100);
+Math.round((data.final.confidence || 0.85) * 100) + "%";
 
-msg.innerText = "🎉 Claim processed successfully.";
 setBadge(data.final.decision || "Approved","green");
 
 document.getElementById("policyStatus").innerText = "Active ✅";
 document.getElementById("nameStatus").innerText = "Matched ✅";
 document.getElementById("amountStatus").innerText = "Eligible ✅";
-document.getElementById("confidenceText").innerText = confidence + "%";
+document.getElementById("confidenceText").innerText = confidence;
 
 out.innerText =
 "Decision: " + data.final.decision + "\n\n" +
 "Reason:\n" + data.final.reason;
 
-}
+msg.innerText = "🎉 Claim processed successfully.";
 
-/* Rejected */
-else if(data.status === "rejected"){
+reportData = {
+decision:data.final.decision,
+confidence:confidence,
+reason:data.final.reason,
+policy:"Active",
+name:"Matched",
+amount:"Eligible"
+};
 
-msg.innerText = "❌ Claim validation failed.";
+reportBtn.style.display = "block";
+
+}else if(data.status === "rejected"){
+
 setBadge("Rejected","red");
 
 document.getElementById("policyStatus").innerText = "Failed ❌";
@@ -605,11 +600,20 @@ out.innerText =
 "Claim Rejected\n\nReasons:\n" +
 (data.errors || []).join("\n");
 
-}
+msg.innerText = "❌ Claim validation failed.";
 
-/* Other */
-else{
-msg.innerText = "⚠ Unexpected response received.";
+reportData = {
+decision:"Rejected",
+confidence:"32%",
+reason:(data.errors || []).join(", "),
+policy:"Failed",
+name:"Mismatch",
+amount:"Blocked"
+};
+
+reportBtn.style.display = "block";
+
+}else{
 setBadge("Error","red");
 out.innerText = JSON.stringify(data,null,2);
 }
@@ -619,16 +623,45 @@ btn.innerText = "⚡ Analyze Claim";
 
 }catch(err){
 
-msg.classList.remove("pulse");
-msg.innerText = "❌ " + err.message;
+document.getElementById("msg").classList.remove("pulse");
+document.getElementById("msg").innerText = "❌ " + err.message;
 setBadge("Error","red");
-out.innerText = err.message;
+document.getElementById("out").innerText = err.message;
 
 btn.disabled = false;
 btn.innerText = "⚡ Analyze Claim";
+}
 
 }
 
+function downloadReport(){
+
+const { jsPDF } = window.jspdf;
+const doc = new jsPDF();
+
+doc.setFontSize(20);
+doc.text("Claim Reflex AI Report",20,20);
+
+doc.setFontSize(11);
+doc.text("Generated: " + new Date().toLocaleString(),20,30);
+
+doc.setFontSize(14);
+doc.text("Decision: " + reportData.decision,20,45);
+doc.text("Confidence: " + reportData.confidence,20,55);
+
+doc.text("Policy Status: " + reportData.policy,20,70);
+doc.text("Name Match: " + reportData.name,20,80);
+doc.text("Amount Check: " + reportData.amount,20,90);
+
+doc.text("Reason:",20,110);
+
+const lines = doc.splitTextToSize(reportData.reason,170);
+doc.text(lines,20,120);
+
+doc.setFontSize(10);
+doc.text("Generated by Claim Reflex AI",20,280);
+
+doc.save("Claim-Reflex-Report.pdf");
 }
 </script>
 
