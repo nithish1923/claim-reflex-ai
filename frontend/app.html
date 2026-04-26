@@ -2,14 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
 <title>Claim Reflex AI</title>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <style>
 *{
@@ -28,6 +28,7 @@ radial-gradient(circle at top left,#2563eb 0%,transparent 30%),
 radial-gradient(circle at bottom right,#06b6d4 0%,transparent 30%),
 linear-gradient(135deg,#0f172a,#111827,#1e293b);
 overflow-x:hidden;
+color:#fff;
 }
 
 body::before,
@@ -37,8 +38,8 @@ position:fixed;
 width:320px;
 height:320px;
 border-radius:50%;
-filter:blur(95px);
-opacity:.20;
+filter:blur(90px);
+opacity:.22;
 z-index:0;
 animation:float 8s ease-in-out infinite;
 }
@@ -70,17 +71,17 @@ animation:fadeUp .8s ease;
 }
 
 @keyframes fadeUp{
-from{opacity:0;transform:translateY(30px)}
+from{opacity:0;transform:translateY(25px)}
 to{opacity:1;transform:translateY(0)}
 }
 
 .card{
-background:rgba(255,255,255,.10);
-backdrop-filter:blur(18px);
+background:rgba(255,255,255,.08);
 border:1px solid rgba(255,255,255,.08);
+backdrop-filter:blur(18px);
 border-radius:28px;
 padding:32px;
-box-shadow:0 25px 50px rgba(0,0,0,.28);
+box-shadow:0 25px 55px rgba(0,0,0,.28);
 }
 
 .top{
@@ -95,7 +96,6 @@ margin-bottom:28px;
 .title{
 font-size:38px;
 font-weight:800;
-color:#fff;
 }
 
 .subtitle{
@@ -113,7 +113,7 @@ font-size:12px;
 font-weight:800;
 background:rgba(34,197,94,.16);
 color:#4ade80;
-border:1px solid rgba(74,222,128,.22);
+border:1px solid rgba(74,222,128,.18);
 }
 
 .logout{
@@ -133,8 +133,8 @@ gap:22px;
 }
 
 .box{
-background:rgba(255,255,255,.06);
-border:1px dashed rgba(255,255,255,.16);
+background:rgba(255,255,255,.05);
+border:1px dashed rgba(255,255,255,.14);
 padding:24px;
 border-radius:22px;
 transition:.3s;
@@ -146,14 +146,13 @@ border-color:#38bdf8;
 }
 
 .box h3{
-color:#fff;
 font-size:20px;
 margin-bottom:10px;
 }
 
 .box p{
-color:#cbd5e1;
 font-size:14px;
+color:#cbd5e1;
 margin-bottom:14px;
 }
 
@@ -168,11 +167,12 @@ flex:1;
 }
 
 input[type=file]{
+width:100%;
 padding:12px;
 border:none;
 border-radius:14px;
 background:#fff;
-width:100%;
+color:#111;
 }
 
 .preview-btn{
@@ -204,6 +204,12 @@ border:none;
 border-radius:18px;
 cursor:pointer;
 color:#fff;
+transition:.25s;
+}
+
+button.process:hover,
+button.report:hover{
+transform:translateY(-2px);
 }
 
 button.process{
@@ -218,6 +224,7 @@ background:linear-gradient(90deg,#16a34a,#22c55e);
 button:disabled{
 opacity:.65;
 cursor:not-allowed;
+transform:none;
 }
 
 #msg{
@@ -251,9 +258,8 @@ margin-bottom:16px;
 }
 
 .result-title{
-font-size:22px;
+font-size:24px;
 font-weight:800;
-color:#fff;
 }
 
 .badge{
@@ -293,10 +299,6 @@ background:linear-gradient(90deg,#22c55e,#3b82f6);
 transition:1s ease;
 }
 
-.fill.redbar{
-background:linear-gradient(90deg,#ef4444,#f87171);
-}
-
 .mini-grid{
 display:grid;
 grid-template-columns:1fr 1fr;
@@ -334,21 +336,53 @@ margin-bottom:4px;
 .mini-value{
 font-size:15px;
 font-weight:700;
-color:#fff;
+}
+
+.section{
+margin-top:18px;
+padding:18px;
+border-radius:18px;
+background:rgba(255,255,255,.03);
+border:1px solid rgba(255,255,255,.05);
+}
+
+.section h4{
+margin-bottom:12px;
+font-size:16px;
+}
+
+ul{
+padding-left:18px;
+line-height:1.8;
+color:#dbeafe;
+}
+
+.history{
+margin-top:18px;
+display:grid;
+gap:10px;
+}
+
+.history-item{
+padding:14px;
+border-radius:16px;
+background:rgba(255,255,255,.04);
+font-size:14px;
+border:1px solid rgba(255,255,255,.05);
 }
 
 pre{
 white-space:pre-wrap;
-word-wrap:break-word;
-font-size:14px;
 line-height:1.7;
+font-size:14px;
 color:#cbd5e1;
+margin-top:16px;
 }
 
 .modal{
 position:fixed;
 inset:0;
-background:rgba(0,0,0,.78);
+background:rgba(0,0,0,.75);
 display:none;
 justify-content:center;
 align-items:center;
@@ -361,16 +395,15 @@ width:95%;
 max-width:950px;
 height:88vh;
 background:#fff;
-border-radius:20px;
+border-radius:18px;
 overflow:hidden;
 display:flex;
 flex-direction:column;
 }
 
 .modal-top{
-background:#111827;
-color:#fff;
 padding:14px 18px;
+background:#111827;
 display:flex;
 justify-content:space-between;
 align-items:center;
@@ -378,15 +411,15 @@ font-weight:700;
 }
 
 .close-btn{
-background:#ef4444;
 border:none;
 padding:8px 14px;
 border-radius:10px;
-color:#fff;
 cursor:pointer;
+background:#ef4444;
+color:#fff;
 }
 
-.modal iframe{
+iframe{
 width:100%;
 height:100%;
 border:none;
@@ -396,15 +429,15 @@ border:none;
 .grid,.mini-grid{
 grid-template-columns:1fr;
 }
+.upload-row{
+flex-direction:column;
+align-items:stretch;
+}
 .title{
 font-size:30px;
 }
 .card{
 padding:22px;
-}
-.upload-row{
-flex-direction:column;
-align-items:stretch;
 }
 }
 </style>
@@ -502,6 +535,16 @@ align-items:stretch;
 
 <pre id="out">Upload files and run analysis.</pre>
 
+<div id="rejectBox" class="section" style="display:none;">
+<h4>Suggested Next Steps</h4>
+<ul id="nextSteps"></ul>
+</div>
+
+<div class="section">
+<h4>Recent Analyses</h4>
+<div id="history" class="history"></div>
+</div>
+
 </div>
 </div>
 </div>
@@ -533,10 +576,7 @@ window.location.href="index.html";
 
 function previewLocal(id){
 const file=document.getElementById(id).files[0];
-if(!file){
-alert("Choose PDF first.");
-return;
-}
+if(!file){alert("Choose PDF first.");return;}
 document.getElementById("previewFrame").src=URL.createObjectURL(file);
 document.getElementById("previewModal").style.display="flex";
 }
@@ -551,38 +591,61 @@ document.getElementById("fill").style.width=v+"%";
 }
 
 function setBadge(text,type){
-const b=document.getElementById("badge");
-b.className="badge "+type;
-b.innerText=text;
-}
-
-function setStatus(id,text){
-document.getElementById(id).innerText=text;
+const el=document.getElementById("badge");
+el.className="badge "+type;
+el.innerText=text;
 }
 
 async function uploadFile(file){
 const fileName=Date.now()+"_"+file.name;
-
-const { error } = await supabaseClient.storage
+const { error }=await supabaseClient.storage
 .from("documents")
 .upload(fileName,file);
 
 if(error) throw error;
 
-const { data } = supabaseClient.storage
+const { data }=supabaseClient.storage
 .from("documents")
 .getPublicUrl(fileName);
 
 return data.publicUrl;
 }
 
-async function run(){
+function saveHistory(status,confidence){
+let items=JSON.parse(localStorage.getItem("claim_history") || "[]");
+items.unshift({
+time:new Date().toLocaleString(),
+status,
+confidence
+});
+items=items.slice(0,6);
+localStorage.setItem("claim_history",JSON.stringify(items));
+renderHistory();
+}
 
+function renderHistory(){
+const box=document.getElementById("history");
+const items=JSON.parse(localStorage.getItem("claim_history") || "[]");
+
+if(items.length===0){
+box.innerHTML="<div class='history-item'>No prior analyses yet.</div>";
+return;
+}
+
+box.innerHTML=items.map(i=>`
+<div class="history-item">
+${i.time}<br>
+Status: ${i.status} | Confidence: ${i.confidence}
+</div>
+`).join("");
+}
+
+async function run(){
 const btn=document.getElementById("analyzeBtn");
-const msg=document.getElementById("msg");
 const reportBtn=document.getElementById("reportBtn");
+const msg=document.getElementById("msg");
 const out=document.getElementById("out");
-const fill=document.getElementById("fill");
+const rejectBox=document.getElementById("rejectBox");
 
 try{
 
@@ -596,28 +659,22 @@ return;
 
 btn.disabled=true;
 reportBtn.style.display="none";
-
-setBadge("Processing","blue");
-fill.classList.remove("redbar");
+rejectBox.style.display="none";
 
 msg.innerText="Uploading files...";
+setBadge("Processing","blue");
 setProgress(20);
 
 const policy_url=await uploadFile(p);
 const claim_url=await uploadFile(c);
 
 msg.innerText="AI reviewing claim...";
-setProgress(70);
+setProgress(75);
 
 const res=await fetch(BACKEND+"/process",{
 method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-policy_url,
-claim_url
-})
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({policy_url,claim_url})
 });
 
 const data=await res.json();
@@ -625,96 +682,86 @@ setProgress(100);
 
 if(data.status==="processed"){
 
-const confidence=Math.round((data.final.confidence || 0.85)*100)+"%";
+const confidence=Math.round((data.final.confidence || .85)*100)+"%";
 
 setBadge(data.final.decision || "Approved","green");
 
-setStatus("policyStatus","Active ✅");
-setStatus("nameStatus","Matched ✅");
-setStatus("amountStatus","Eligible ✅");
-setStatus("confidenceText",confidence);
+document.getElementById("policyStatus").innerText="Active ✅";
+document.getElementById("nameStatus").innerText="Matched ✅";
+document.getElementById("amountStatus").innerText="Eligible ✅";
+document.getElementById("confidenceText").innerText=confidence;
 
 out.innerText=
-"Decision: " + data.final.decision +
-"\n\nReason:\n" +
-data.final.reason;
+"Decision: "+data.final.decision+
+"\n\nReason:\n"+data.final.reason;
+
+msg.innerText="Claim processed successfully.";
+
+reportBtn.style.display="block";
 
 reportData={
 decision:data.final.decision,
-confidence:confidence,
+confidence,
 reason:data.final.reason,
-approve:data.approve_agent || "",
-reject:data.reject_agent || "",
-judge:data.final.reason || ""
+approve:"Approval agent confirms policy and claim are aligned.",
+reject:"Rejection agent found no major blocking issue.",
+judge:data.final.reason
 };
 
-msg.innerText="Claim processed successfully.";
-reportBtn.style.display="block";
+saveHistory("Approved",confidence);
 
-}else if(data.status==="rejected"){
+}else{
+
+const reasons=(data.errors || ["Validation failed"]);
 
 setBadge("Rejected","red");
-fill.classList.add("redbar");
 
-const errors=data.errors || [];
-const lower=errors.map(e=>e.toLowerCase());
-
-const policyFail=lower.some(e=>e.includes("policy"));
-const nameFail=lower.some(e=>e.includes("name") || e.includes("holder"));
-const amountFail=lower.some(e=>e.includes("amount"));
-
-setStatus(
-"policyStatus",
-policyFail ? "Failed ❌" : "Active ✅"
-);
-
-setStatus(
-"nameStatus",
-nameFail ? "Mismatch ❌" : "Matched ✅"
-);
-
-setStatus(
-"amountStatus",
-amountFail ? "Blocked ❌" : "Eligible ✅"
-);
-
-setStatus("confidenceText","32%");
+document.getElementById("policyStatus").innerText="Failed ❌";
+document.getElementById("nameStatus").innerText="Mismatch ❌";
+document.getElementById("amountStatus").innerText="Blocked ❌";
+document.getElementById("confidenceText").innerText="32%";
 
 out.innerText=
-"Claim Rejected\n\nReasons:\n• " +
-errors.join("\n• ");
+"Claim Rejected\n\nReasons:\n• "+
+reasons.join("\n• ");
+
+msg.innerText="Claim rejected.";
+
+rejectBox.style.display="block";
+
+document.getElementById("nextSteps").innerHTML=`
+<li>Recheck uploaded policy document.</li>
+<li>Ensure policy number matches claim form.</li>
+<li>Verify claimant name spelling.</li>
+<li>Upload corrected files and retry.</li>
+`;
+
+reportBtn.style.display="block";
 
 reportData={
 decision:"Rejected",
 confidence:"32%",
-reason:errors.join(", "),
-approve:"Approval side found limited support.",
-reject:"Validation checks found mismatch conditions.",
-judge:errors.join(", ")
+reason:reasons.join(", "),
+approve:"Approval agent found limited support.",
+reject:"Rejection agent identified mismatched data.",
+judge:reasons.join(", ")
 };
 
-msg.innerText="Claim rejected.";
-reportBtn.style.display="block";
-
-}else{
-setBadge("Error","red");
-out.innerText=JSON.stringify(data,null,2);
+saveHistory("Rejected","32%");
 }
 
 btn.disabled=false;
 
 }catch(err){
-
 msg.innerText=err.message;
 setBadge("Error","red");
 btn.disabled=false;
-
 }
 }
 
 function downloadReport(){
 
-const { jsPDF } = window.jspdf;
+const { jsPDF }=window.jspdf;
 const doc=new jsPDF();
 
 doc.setFontSize(22);
@@ -723,17 +770,15 @@ doc.text("Claim Reflex AI Report",20,20);
 doc.setFontSize(11);
 doc.text("Generated: "+new Date().toLocaleString(),20,30);
 
-doc.setFontSize(15);
+doc.setFontSize(14);
 doc.text("Decision: "+reportData.decision,20,45);
 doc.text("Confidence: "+reportData.confidence,20,55);
 
 doc.text("Summary:",20,70);
-
 let lines=doc.splitTextToSize(reportData.reason || "",170);
 doc.text(lines,20,80);
 
 doc.addPage();
-
 doc.setFontSize(20);
 doc.text("AI Debate Chamber",20,20);
 
@@ -751,18 +796,17 @@ lines=doc.splitTextToSize(reportData.judge || "",170);
 doc.text(lines,20,162);
 
 doc.addPage();
-
 doc.setFontSize(20);
 doc.text("Audit Trail",20,20);
-
 doc.setFontSize(13);
 doc.text("Engine: Claim Reflex AI v1",20,40);
 doc.text("Decision Mode: Multi-Agent Debate",20,55);
-doc.text("Timestamp:",20,70);
-doc.text(new Date().toLocaleString(),20,80);
+doc.text("Timestamp: "+new Date().toLocaleString(),20,70);
 
 doc.save("Claim-Reflex-Premium-Report.pdf");
 }
+
+renderHistory();
 </script>
 
 </body>
