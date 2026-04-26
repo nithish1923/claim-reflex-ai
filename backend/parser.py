@@ -1,8 +1,9 @@
 import requests
-import pdfplumber
 import tempfile
+import fitz   # PyMuPDF
 
 def extract_text_from_url(url):
+
     response = requests.get(url)
 
     with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp:
@@ -11,8 +12,11 @@ def extract_text_from_url(url):
 
     text = ""
 
-    with pdfplumber.open(tmp_path) as pdf:
-        for page in pdf.pages:
-            text += page.extract_text() or ""
+    doc = fitz.open(tmp_path)
+
+    for page in doc:
+        text += page.get_text()
+
+    doc.close()
 
     return text
