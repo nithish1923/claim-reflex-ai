@@ -1,17 +1,43 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Claim Reflex AI</title>
+<title>Claim Reflex AI</title>
+<style>
+body{
+font-family:Arial;
+padding:30px;
+background:#f4f4f4;
+}
+
+.box{
+background:white;
+padding:25px;
+border-radius:10px;
+max-width:500px;
+margin:auto;
+box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+
+button{
+padding:10px 15px;
+margin-top:10px;
+cursor:pointer;
+}
+
+pre{
+background:#111;
+color:#0f0;
+padding:15px;
+overflow:auto;
+}
+</style>
 </head>
+
 <body>
 
-<script>
-if (!localStorage.getItem("user")) {
-  window.location.href = "login.html"
-}
-</script>
+<div class="box">
 
-<h3>Claim Reflex AI</h3>
+<h2>Claim Reflex AI</h2>
 
 <button onclick="logout()">Logout</button>
 
@@ -22,61 +48,90 @@ if (!localStorage.getItem("user")) {
 
 <button onclick="run()">Process</button>
 
+<p id="msg"></p>
+
 <pre id="out"></pre>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <script>
 const SUPABASE_URL = "https://ubdiwfsfjaaxnvygdclx.supabase.co"
-const SUPABASE_KEY = "sb_publishable_AJVk6h6ssAdtiYsgLG8MJQ_tE9Z4Dd9"
+const SUPABASE_KEY = "PASTE_YOUR_PUBLISHABLE_KEY"
 const BACKEND = "https://claim-reflex-ai.onrender.com"
 
-function logout() {
-  localStorage.removeItem("user")
-  window.location.href = "login.html"
+const { createClient } = supabase
+const supabaseClient = createClient(SUPABASE_URL,SUPABASE_KEY)
+
+function logout(){
+localStorage.clear()
+window.location.href="index.html"
 }
 
-async function upload(file) {
-  const fileName = Date.now() + "_" + file.name
+async function uploadFile(file){
 
-  await fetch(`${SUPABASE_URL}/storage/v1/object/documents/${fileName}`, {
-    method: "POST",
-    headers: {
-      "apikey": SUPABASE_KEY,
-      "Authorization": `Bearer ${SUPABASE_KEY}`,
-      "Content-Type": file.type
-    },
-    body: file
-  })
+const fileName = Date.now() + "_" + file.name
 
-  return `${SUPABASE_URL}/storage/v1/object/public/documents/${fileName}`
+const { data, error } = await supabaseClient.storage
+.from("documents")
+.upload(fileName, file)
+
+if(error){
+throw error
 }
 
-async function run() {
-  let p = document.getElementById("policy").files[0]
-  let c = document.getElementById("claim").files[0]
+const { data: urlData } = supabaseClient.storage
+.from("documents")
+.getPublicUrl(fileName)
 
-  if (!p || !c) {
-    alert("Please upload both files")
-    return
-  }
+return urlData.publicUrl
+}
 
-  document.getElementById("out").innerText = "Processing..."
+async function run(){
 
-  let p_url = await upload(p)
-  let c_url = await upload(c)
+try{
 
-  let res = await fetch(`${BACKEND}/process`, {
-    method: "POST",
-    headers: {"Content-Type": "application/json"},
-    body: JSON.stringify({
-      policy_url: p_url,
-      claim_url: c_url
-    })
-  })
+document.getElementById("msg").innerText="Uploading..."
 
-  let data = await res.json()
+const p = document.getElementById("policy").files[0]
+const c = document.getElementById("claim").files[0]
 
-  document.getElementById("out").innerText =
-    JSON.stringify(data, null, 2)
+if(!p || !c){
+alert("Upload both files")
+return
+}
+
+const policy_url = await uploadFile(p)
+const claim_url = await uploadFile(c)
+
+document.getElementById("msg").innerText="Processing..."
+
+const res = await fetch(BACKEND + "/process",{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+policy_url,
+claim_url
+})
+})
+
+const data = await res.json()
+
+document.getElementById("msg").innerText="Done"
+
+document.getElementById("out").innerText =
+JSON.stringify(data,null,2)
+
+}catch(err){
+
+document.getElementById("msg").innerText =
+err.message
+
+}
+
 }
 </script>
 
