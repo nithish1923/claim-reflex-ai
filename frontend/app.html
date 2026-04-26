@@ -293,6 +293,10 @@ background:linear-gradient(90deg,#22c55e,#3b82f6);
 transition:1s ease;
 }
 
+.fill.redbar{
+background:linear-gradient(90deg,#ef4444,#f87171);
+}
+
 .mini-grid{
 display:grid;
 grid-template-columns:1fr 1fr;
@@ -392,15 +396,12 @@ border:none;
 .grid,.mini-grid{
 grid-template-columns:1fr;
 }
-
 .title{
 font-size:30px;
 }
-
 .card{
 padding:22px;
 }
-
 .upload-row{
 flex-direction:column;
 align-items:stretch;
@@ -505,7 +506,6 @@ align-items:stretch;
 </div>
 </div>
 
-<!-- modal -->
 <div class="modal" id="previewModal">
 <div class="modal-box">
 <div class="modal-top">
@@ -533,7 +533,10 @@ window.location.href="index.html";
 
 function previewLocal(id){
 const file=document.getElementById(id).files[0];
-if(!file){alert("Choose PDF first.");return;}
+if(!file){
+alert("Choose PDF first.");
+return;
+}
 document.getElementById("previewFrame").src=URL.createObjectURL(file);
 document.getElementById("previewModal").style.display="flex";
 }
@@ -551,6 +554,10 @@ function setBadge(text,type){
 const b=document.getElementById("badge");
 b.className="badge "+type;
 b.innerText=text;
+}
+
+function setStatus(id,text){
+document.getElementById(id).innerText=text;
 }
 
 async function uploadFile(file){
@@ -575,6 +582,7 @@ const btn=document.getElementById("analyzeBtn");
 const msg=document.getElementById("msg");
 const reportBtn=document.getElementById("reportBtn");
 const out=document.getElementById("out");
+const fill=document.getElementById("fill");
 
 try{
 
@@ -590,6 +598,8 @@ btn.disabled=true;
 reportBtn.style.display="none";
 
 setBadge("Processing","blue");
+fill.classList.remove("redbar");
+
 msg.innerText="Uploading files...";
 setProgress(20);
 
@@ -601,12 +611,16 @@ setProgress(70);
 
 const res=await fetch(BACKEND+"/process",{
 method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({policy_url,claim_url})
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+policy_url,
+claim_url
+})
 });
 
 const data=await res.json();
-
 setProgress(100);
 
 if(data.status==="processed"){
@@ -615,47 +629,68 @@ const confidence=Math.round((data.final.confidence || 0.85)*100)+"%";
 
 setBadge(data.final.decision || "Approved","green");
 
-document.getElementById("policyStatus").innerText="Active ✅";
-document.getElementById("nameStatus").innerText="Matched ✅";
-document.getElementById("amountStatus").innerText="Eligible ✅";
-document.getElementById("confidenceText").innerText=confidence;
+setStatus("policyStatus","Active ✅");
+setStatus("nameStatus","Matched ✅");
+setStatus("amountStatus","Eligible ✅");
+setStatus("confidenceText",confidence);
 
 out.innerText=
-"Decision: " + data.final.decision + "\n\nReason:\n" + data.final.reason;
+"Decision: " + data.final.decision +
+"\n\nReason:\n" +
+data.final.reason;
 
 reportData={
 decision:data.final.decision,
 confidence:confidence,
 reason:data.final.reason,
-approve:data.approve_agent || "Approval agent recommends approval.",
-reject:data.reject_agent || "Rejection agent found weak objections.",
-judge:data.final.reason || "Final decision approved."
+approve:data.approve_agent || "",
+reject:data.reject_agent || "",
+judge:data.final.reason || ""
 };
 
-setBadge(data.final.decision,"green");
 msg.innerText="Claim processed successfully.";
 reportBtn.style.display="block";
 
 }else if(data.status==="rejected"){
 
 setBadge("Rejected","red");
+fill.classList.add("redbar");
 
-document.getElementById("policyStatus").innerText="Failed ❌";
-document.getElementById("nameStatus").innerText="Mismatch ❌";
-document.getElementById("amountStatus").innerText="Blocked ❌";
-document.getElementById("confidenceText").innerText="32%";
+const errors=data.errors || [];
+const lower=errors.map(e=>e.toLowerCase());
 
-const reasons=(data.errors || []).join(", ");
+const policyFail=lower.some(e=>e.includes("policy"));
+const nameFail=lower.some(e=>e.includes("name") || e.includes("holder"));
+const amountFail=lower.some(e=>e.includes("amount"));
 
-out.innerText="Claim Rejected\n\nReasons:\n"+reasons;
+setStatus(
+"policyStatus",
+policyFail ? "Failed ❌" : "Active ✅"
+);
+
+setStatus(
+"nameStatus",
+nameFail ? "Mismatch ❌" : "Matched ✅"
+);
+
+setStatus(
+"amountStatus",
+amountFail ? "Blocked ❌" : "Eligible ✅"
+);
+
+setStatus("confidenceText","32%");
+
+out.innerText=
+"Claim Rejected\n\nReasons:\n• " +
+errors.join("\n• ");
 
 reportData={
 decision:"Rejected",
 confidence:"32%",
-reason:reasons,
-approve:"Approval agent found limited support.",
-reject:"Rejection agent found policy/document mismatch.",
-judge:reasons
+reason:errors.join(", "),
+approve:"Approval side found limited support.",
+reject:"Validation checks found mismatch conditions.",
+judge:errors.join(", ")
 };
 
 msg.innerText="Claim rejected.";
@@ -669,9 +704,11 @@ out.innerText=JSON.stringify(data,null,2);
 btn.disabled=false;
 
 }catch(err){
+
 msg.innerText=err.message;
 setBadge("Error","red");
 btn.disabled=false;
+
 }
 }
 
@@ -691,10 +728,10 @@ doc.text("Decision: "+reportData.decision,20,45);
 doc.text("Confidence: "+reportData.confidence,20,55);
 
 doc.text("Summary:",20,70);
+
 let lines=doc.splitTextToSize(reportData.reason || "",170);
 doc.text(lines,20,80);
 
-/* Page 2 Debate */
 doc.addPage();
 
 doc.setFontSize(20);
@@ -713,7 +750,6 @@ doc.text("Final Judge:",20,152);
 lines=doc.splitTextToSize(reportData.judge || "",170);
 doc.text(lines,20,162);
 
-/* Page 3 Audit */
 doc.addPage();
 
 doc.setFontSize(20);
@@ -722,10 +758,8 @@ doc.text("Audit Trail",20,20);
 doc.setFontSize(13);
 doc.text("Engine: Claim Reflex AI v1",20,40);
 doc.text("Decision Mode: Multi-Agent Debate",20,55);
-doc.text("Processing Timestamp:",20,70);
+doc.text("Timestamp:",20,70);
 doc.text(new Date().toLocaleString(),20,80);
-
-doc.text("Status Integrity Checks Passed",20,100);
 
 doc.save("Claim-Reflex-Premium-Report.pdf");
 }
